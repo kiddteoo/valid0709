@@ -2,46 +2,118 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-    <link rel="stylesheet" href="https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
-    <link rel="stylesheet" href="https://unpkg.com/vuetify@2.6.10/dist/vuetify.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" />
+    <link rel="stylesheet" href="https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons" />
+    <link rel="stylesheet" href="https://unpkg.com/vuetify@2.6.10/dist/vuetify.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
     <script src="https://unpkg.com/babel-polyfill/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/vuetify@2.6.10/dist/vuetify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-confetti@0.9.0/dist/js-confetti.browser.js"></script>
-    <link href="https://fonts.cdnfonts.com/css/bebas-neue" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/bebas-neue" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/ScrollTrigger.js"></script>
     <script src="https://unpkg.com/split-type"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <title>Project</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 
 <body>
-	<v-app id="app"> <!--id de la variable que hemos puesto en el index.js-->
-		<v-container fluid fill-height style="border:2px solid black;"> <!--Basicamente es como un div pero de manera más responsive y de manera GRID como dice el teacher-->
-			<!--Fill height, lo que hace es poner una altura que ocupa toda la pantalla, la "rellena"-->
-			<!--Fluid, lo que hace es rellenar el espacio de ancho de la pantalla-->
-			<v-row justify="center" align-items="center" style="border: 2px solid red;"> <!--añadimos una fila en el centro de la pagina y con el align centraremos la columna-->
-                <v-col sm="auto" style="border: 2px solid green;"><!--Centrado gracias al align del row, y con el margen en automatico quedara todo centrado en el medio-->
-					<v-text-field label="Texto" v-model="text"></v-text-field> <!--v-model es para guardar lo que pongas en la caja de texto en la variable de data del js-->
-					<v-btn @click="hash">BOTON 1</v-btn> <!--Podemos usar un @click para llamar a metodos-->
-					<v-btn>BOTON 2</v-btn> <!--demas botones ya vamos a hacer... que no se que entra-->
-					<v-btn>BOTON 3</v-btn>
-					<v-btn>BOTON 4</v-btn>
-					<br>
-					{{hashed}} <!--Aqui imprimimos el texto hasheado...--> 
-					<!--Esto es un ejemplo senzillo para la prueba, con esto se ve bien en movil y en todos lados.-->
-				</v-col>
-			</v-row>
-		</v-container>
-	</v-app>
-</body>
-<script src="./index.js"></script>
+    <v-app id="app">
+        <v-container fluid fill-height style="border:2px solid black;">
+            <!--Basicamente es como un div pero de manera más responsive y de manera GRID como dice el teacher-->
+            <!--Fill height, lo que hace es poner una altura que ocupa toda la pantalla, la "rellena"-->
+            <!--Fluid, lo que hace es rellenar el espacio de ancho de la pantalla-->
+            <v-row justify="center" align-items="center" style="border: 2px solid red;">
+                <!--añadimos una fila en el centro de la pagina y con el align centraremos la columna-->
+                <v-col sm="auto"
+                    style="border: 2px solid green;"><!--Centrado gracias al align del row, y con el margen en automatico quedara todo centrado en el medio-->
+                    <v-text-field label="Texto" v-model="text"></v-text-field>
+                    <!--v-model es para guardar lo que pongas en la caja de texto en la variable de data del js-->
+                    <v-btn @click="hash">HASH</v-btn> <!--Podemos usar un @click para llamar a metodos-->
+                    <v-btn @click="enviarMensaje">SOCKETS</v-btn><!--BOTON PARA MANDAR MENSAJE-->
+                    <!--demas botones ya vamos a hacer... que no se que entra-->
+                    <br>
+                    {{hashed}}
+                    <br>
+                    <p>SOCKETS</p>
+                    <v-list>
+                        <v-list-item v-for="(mensaje, index) in mensajes" :key="index">
+                            <v-list-item-title>{{ mensaje }}</v-list-item-title>
+                        </v-list-item>
+                    </v-list><!--Aqui imprimimos el texto hasheado...-->
+                    <!--Esto es un ejemplo senzillo para la prueba, con esto se ve bien en movil y en todos lados.-->
+                </v-col>
+            </v-row>
+        </v-container>
+
+    </v-app>
+
+    <script>
+        var vue_app = new Vue({
+            el: "#app",
+            vuetify: new Vuetify(),
+            data: {
+                text: '',
+                mensaje: '',
+                hashed: '',
+                mensajes: [],
+                info: { values: [] },
+            },
+            mounted() {
+                this.socket = io();
+
+                // Escucha el evento "mensaje" del servidor
+                this.socket.on('mensaje', (text) => {
+                    console.log(text);
+                    this.mensajes.push(text);
+                });
+            },
+            methods: {
+                hash: function () {
+                    this.info.values.push(this.text); //Guardamos en el info values el texto, y mandamos el objeto info a través del body.
+                    console.log(this.text);
+                    fetch("http://localhost:7080/hash/",
+                        {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            },
+                            credentials: "include",
+                            body: JSON.stringify(this.info),
+                            mode: "cors",
+                            cache: "default"
+                        }
+                    ).then(
+                        (response) => {
+                            return (response.json());
+                        }
+                    ).then(
+                        (data) => {
+                            console.log(data);
+                            this.hashed = data; //guardamos el texto  hasheado enviado desde el server, y lo guardamos en la variable hashed, que la usaremos en el html
+                            this.text = '';
+                        }
+                    ).catch(
+                        (error) => {
+                            console.log(error);
+                        }
+                    );
+                },
+                enviarMensaje() {
+                    // Envía el mensaje al servidor
+                    this.socket.emit('mensaje', this.text);
+                    this.text = '';
+                },
+            }
+        });
+    </script>
+
 </html>
